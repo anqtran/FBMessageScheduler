@@ -14,20 +14,27 @@ from wtforms.validators import DataRequired
 import datetime as dt
 from datetime import datetime
 
+import time
+
 app = Flask(__name__)
 scheduler = BackgroundScheduler()
 
-client = None
-friends = None
 queue = None
 
 # Background Job
 def check_for_jobs():
-    # if client:
-        # client.send(Message(text='Message using cookies'), thread_id='100000046489168', thread_type=ThreadType.USER)
-    if queue:
-        print(queue)
     print('I am working...')
+    print("original queue:")
+    print(queue)
+    print("jobs to send")    
+    jobs_to_send = queue.get_jobs()
+    for job in jobs_to_send:
+        print("sending", job)
+        job_client = Client(job['username'], job['pw'])
+        job_client.send(Message(text=job['message']), thread_id=job['recipient_uid'], thread_type=ThreadType.USER)
+
+    print("queue after:")
+    print(queue)
 
 scheduler.add_job(check_for_jobs, 'interval', seconds=5)
 scheduler.start()
@@ -54,6 +61,20 @@ class Queue:
             'timestamp': timestamp
             })
 
+    def get_jobs(self):
+        threshold = 500
+        jobs_to_send = []
+        current_time = int(time.mktime(time.localtime()))
+
+        for job in self.queue:
+            job_time = int(time.mktime(time.strptime(job['timestamp'], "%Y-%m-%d %H:%M:%S")))
+            diff_time = job_time - current_time
+            if diff_time < 60:
+                jobs_to_send.append(job)
+                self.queue.remove(job)
+
+        return jobs_to_send
+
     def __str__(self):
         return str(self.queue)
 
@@ -61,7 +82,7 @@ class Queue:
 @app.route("/send/", methods=['POST'])
 def send():
     global queue
-    global client
+
     data_form = {}
     for key, value in request.form.items():
         data_form[key] = value
@@ -69,9 +90,7 @@ def send():
     friend_id = data_form['friends']
     message = data_form['message']
     timestamp = data_form['timestamp']
-    # client.send(Message(text=message), thread_id='100000007282966', thread_type=ThreadType.USER)
-    queue.add_job(client.email, client.password, friend_id, message, timestamp)
-    print(client.email, client.password, friend_id, message, timestamp)
+    queue.add_job(session['username'], session['password'], friend_id, message, timestamp)
     return redirect('/')
 
 @app.route('/')
@@ -79,33 +98,47 @@ def home():
     if not session.get('logged_in'):
         return render_template('login.html')
     else:
-        global friends
+        username = session['username']
+        password = session['password']
+        session_client = Client(username, password)        
+        friends = session_client.fetchAllUsers()
+        friends = [{'name':friend.name, 'uid':friend.uid} for friend in friends]
+        friends = sorted(friends, key=lambda k: k['name'])
+
         form = UserInput()
-        form.friends.choices = [(friend.uid, friend.name) for friend in friends]
+        form.friends.choices = [(friend['uid'], friend['name']) for friend in friends]
+        session_client.logout()
         return render_template('user_input.html', form=form, friends=friends)
 
 @app.route('/login', methods=['POST'])
 def do_admin_login():
-    username = request.form['username']
-    password = request.form['password']
     try:
-        global client
-        global friends
+        username = request.form['username']
+        password = request.form['password']
+
+        session['username'] = username
+        session['password'] = password
+
         client = Client(username, password, max_tries=1)
         friends = client.fetchAllUsers()
+        friends = [{'name':friend.name, 'uid':friend.uid} for friend in friends]
+        friends = sorted(friends, key=lambda k: k['name'])
         session['logged_in'] = True
+        client.logout()
     except FBchatException as exception:
         print(exception)
         flash('wrong password')
-    return redirect('/')
+    return home()
 
 @app.route("/logout")
 def logout():
     session['logged_in'] = False
+    session['username'] = None
+    session['password'] = None
     return home()
 
 if __name__ == "__main__":
     queue = Queue()
     app.secret_key = os.urandom(12)
-    app.run(debug=True,host='0.0.0.0', port=4000)
+    app.run(debug=True,host='0.0.0.0', port=5000)
 
