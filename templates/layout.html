@@ -1,0 +1,21 @@
+<script src="{{url_for('static', filename='../static/jquery.js')}}"></script>
+<script src="{{url_for('static', filename='../static/typeahead.js')}}"></script>
+<script src="{{url_for('static', filename='../static/the-basics.js')}}"></script>
+
+<!doctype html>
+<html>
+  <head>
+    {% block head %}
+    <link rel="stylesheet" href="{{ url_for('static', filename='../static/style.css') }}">
+    <script src="{{url_for('static', filename='../static/jquery.js')}}"></script>
+    <script src="{{url_for('static', filename='../static/typeahead.js')}}"></script>
+    <script src="{{url_for('static', filename='../static/the-basics.js')}}"></script>
+    {% endblock %}
+  </head>
+
+  <body>
+    {% block body %}
+      <div id="content">{% block content %}{% endblock %}</div>
+    {% endblock %}
+  </body>
+</html>

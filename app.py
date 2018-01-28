@@ -38,7 +38,7 @@ class UserInput(FlaskForm):
     friends = SelectField('Friends', validators=[DataRequired()])
     message = TextAreaField('Message', validators=[DataRequired()])
     timestamp = DateTimeField(label='Date', default=datetime.today, format='%Y-%m-%d %H:%M:%S')
-    sendbtn = SubmitField('Send')
+    sendbtn = SubmitField('Send', render_kw={"data-animation": "ripple"})
 
 # Queue for jobs
 class Queue:
@@ -69,7 +69,7 @@ def send():
     friend_id = data_form['friends']
     message = data_form['message']
     timestamp = data_form['timestamp']
-    client.send(Message(text=message), thread_id='100000007282966', thread_type=ThreadType.USER)
+    # client.send(Message(text=message), thread_id='100000007282966', thread_type=ThreadType.USER)
     queue.add_job(client.email, client.password, friend_id, message, timestamp)
     print(client.email, client.password, friend_id, message, timestamp)
     return redirect('/')

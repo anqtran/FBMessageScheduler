@@ -1,6 +1,5 @@
-<script src="{{url_for('static', filename='../static/jquery.js')}}"></script>
-<script src="{{url_for('static', filename='../static/typeahead.js')}}"></script>
-<script src="{{url_for('static', filename='../static/the-basics.js')}}"></script>
+
+{% block body %}
 
 <div id="the-basics">
   <input class="typeahead" type="text" placeholder="States of USA">
@@ -10,6 +9,9 @@
     <input type="text" name="uid">
     <input type="submit">
 </form>
+
 {% for friend in friends %}
 <p> {{ friend.name }}, {{ friend.uid }} </p>
 {% endfor %}
+
+{% endblock %}  

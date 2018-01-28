@@ -1,10 +1,23 @@
+{% extends "layout.html" %}
+
+
 {% block content %}
+<a data-animation="ripple" id="logout">Log Out</a>
+
+<div class="center-block bigbox" align="center">
+
+
 <form action="{{ url_for('send') }}" method="post">
     {{ form.friends }}
     <br>
-    {{ form.message }}
+    {{ form.message(rows='10',cols='80') }}
     <br>
     {{ form.timestamp }}
     <br>
     {{ form.sendbtn }}
+</form>
+
+</div>
+
+
 {% endblock %}
