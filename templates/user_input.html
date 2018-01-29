@@ -1,0 +1,131 @@
+{% extends "layout.html" %}
+
+
+{% block content %}
+
+
+<style>
+#friends {
+  display: none;
+  list-style: none;
+  width: 250px;
+  margin-top: -2px;
+  color: #000000;
+  background-color: #ecf0f1 !important;
+}
+#friends option {
+  width: 250px;
+  list-style: none;
+  padding: 20px 15px;
+  border-right: 2px solid rgba(255, 255, 255, 0.6);
+  border-bottom: 2px solid rgba(255, 255, 255, 0.6);
+  border-left: 2px solid rgba(255, 255, 255, 0.6);
+}
+#friends option:hover {
+  background: rgba(0, 0, 0, 0.1);
+}
+</style>
+
+
+<a data-animation="ripple" id="logout" href="/logout">Log Out</a>
+
+<div class="center-block bigbox" align="center">
+
+
+<form action="{{ url_for('send') }}" method="post">
+
+  <input type="text" name="autofocus sample" placeholder="Search for a friend ..." id="autocomplete-input"></input>
+
+<!--   <select style="background-color: #57D4FF; border: 0px" id="autocomplete-results">
+  </select> -->
+
+    {{ form.friends }}
+    <br>
+    <br>
+    {{ form.message(rows='10',cols='80') }}
+    <br>
+    <br>
+    {{ form.timestamp }}
+    <br>
+    {{ form.sendbtn }}
+</form>
+
+</div>
+
+
+<script>
+	var friends = document.getElementById('friends');
+	var newList = [];
+	var idList = [];
+	totalLength = friends.length
+
+	var people = [];
+
+	for (j = 0; j < totalLength; j++) {
+
+		people.push({
+			'uid': friends[j].value,
+			'name': friends[j].text
+		})
+
+		idList.push(friends[j].value)
+		newList.push(friends[j].text)
+  	}
+
+  	console.log(people)
+	function autocomplete(val) {
+	  var people_return = [];
+
+	  for (i = 0; i < people.length; i++) {
+	    if ((val === people[i]['name'].slice(0, val.length).toLowerCase()) || (val === people[i]['name'].slice(0, val.length))) {
+	      people_return.push(people[i]);
+	    }
+	  }
+	  console.log(people_return);
+	  return people_return;
+	}
+
+	document.getElementById('autocomplete-input').onkeyup = function(e) {
+		input_val = this.value; // updates the variable on each ocurrence
+
+		if (input_val.length > 0) {
+			var people_to_show = [];
+
+			autocomplete_results = document.getElementById("friends");
+			autocomplete_results.innerHTML = '';
+			people_to_show = autocomplete(input_val);
+
+			for (i = 0; i < people_to_show.length; i++) {
+				autocomplete_results.innerHTML += '<option value=\"' + people_to_show[i]['uid'] + '\">' + people_to_show[i]['name'] + '</option>';
+
+			}
+			autocomplete_results.style.display = 'block';
+		} else {
+			people_to_show = [];
+			autocomplete_results.innerHTML = '';
+		}
+	}
+
+
+	$('#friends').on('change', function(e) {
+	    var optionSelected = $(this).find("option:selected");
+	    var valueSelected  = optionSelected.val();
+	    var textSelected   = optionSelected.text();
+	    console.log(textSelected);
+		$('#autocomplete-input').val(textSelected);
+	})
+
+	// document.getElementById("friends").onclick = function(e) {
+	// 	console.log(e);
+	//     // var options = activities.querySelectorAll("option");
+	//     // var count = options.length;
+	//     // if(typeof(count) === "undefined" || count < 2)
+	//     // {
+	//     //     addActivityItem();
+	//     // }
+	// };
+
+</script>
+
+
+{% endblock %}

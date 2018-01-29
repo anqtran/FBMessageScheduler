@@ -1,3 +1,17 @@
+
+{% block body %}
+
+<div id="the-basics">
+  <input class="typeahead" type="text" placeholder="States of USA">
+</div>
+
+<form action="/send/" method="post">
+    <input type="text" name="uid">
+    <input type="submit">
+</form>
+
 {% for friend in friends %}
 <p> {{ friend.name }}, {{ friend.uid }} </p>
 {% endfor %}
+
+{% endblock %}  
