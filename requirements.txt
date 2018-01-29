@@ -1,0 +1,6 @@
+flask
+fbchat
+apscheduler
+flask_wtf
+wtforms
+datetime
